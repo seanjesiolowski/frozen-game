@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frozen Matching Game</title>
+    <style>
+        /* Frozen color palette: https://www.color-hex.com/color-palette/5285 */
+        body {
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #8b0a50;
+            background: #7ec0ee;
+
+            display: flex;
+            flex-direction: column; /*stacks child elements vertically*/
+            justify-content: center; /*aligns items across the main axis [vertical here]*/
+            align-items: center; /*aligns items across the cross axis [horizontal here]*/
+        }
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* ? */
+        }
+        footer {
+            display: none;
+            border: 5px solid #8b0a50;
+        }
+        .row {
+            width: 480px;
+            height: 100px;
+            padding: 5px;
+            border: 5px solid #b452cd;
+            background: #bfefff;
+
+            display: flex;
+            justify-content: space-evenly; /*aligns items across the main axis [horizontal here]*/
+            align-items: center; /*aligns items across the cross axis [vertical here]*/
+        }
+        .item {
+            width: 75px;
+            height: 75px;
+            border: 5px solid #8b0a50;
+            background: #b5b6e4;
+        }
+        .spacer {
+            height: 5px;
+        }
+        #game-board {
+            border: #f8f8ff 10px solid;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #special-img {
+            width: 190px;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div id="game-board">
+            <div class="row">
+                <div class="item getsImg" onclick="handleComparison(this)"></div>
+                <div class="item getsImg" onclick="handleComparison(this)"></div>
+                <div class="item getsImg" onclick="handleComparison(this)"></div>
+                <div class="item getsImg" onclick="handleComparison(this)"></div>
+            </div>
+            <div class="spacer"></div>
+            <div class="row">
+                <div class="item getsImg" onclick="handleComparison(this)"></div>
+                <div class="item getsImg" onclick="handleComparison(this)"></div>
+                <div class="item getsImg" onclick="handleComparison(this)"></div>
+                <div class="item getsImg" onclick="handleComparison(this)"></div>
+            </div>
+            <div class="spacer"></div>
+            <div class="row">
+                <div class="item getsImg" onclick="handleComparison(this)"></div>
+                <div class="item getsImg" onclick="handleComparison(this)"></div>
+                <div class="item getsImg" onclick="handleComparison(this)"></div>
+                <div class="item getsImg" onclick="handleComparison(this)"></div>
+            </div>
+            <div class="spacer"></div>
+            <div class="row">
+                <div class="item getsImg" onclick="handleComparison(this)"></div>
+                <div class="item getsImg" onclick="handleComparison(this)"></div>
+                <div class="item getsImg" onclick="handleComparison(this)"></div>
+                <div class="item getsImg" onclick="handleComparison(this)"></div>
+            </div>
+        </div>
+    </main>
+    <footer id="the-footer">
+            <button  onclick="reloadPage()">
+                <img src="img/logo.svg" alt="" id="special-img"> <!-- Wikipedia image uploaded by DatBot -->
+            </button>
+    </footer>
+</body>
+<script>
+
+        function reloadPage() {
+            if (canReload) {
+                window.location.reload();
+            }
+        }
+
+
+        function toggleDisplay(imgElement) {
+            if (imgElement.style.display === 'none') {
+                imgElement.style.display = 'block';
+            } else {
+                imgElement.style.display = 'none';
+            }
+        }
+
+
+        function handleComparison(divEl) {
+            const imgElement = divEl.querySelector('img');
+            const imgSrc = imgElement.src;
+
+            if (!matchValue1 && !matchValue2){
+                matchElement1 = divEl;
+                matchValue1 = imgSrc;
+                console.log("First selection made.");
+            } else {
+                if (matchValue1 && !matchValue2){
+                    matchElement2 = divEl;
+                    if (matchElement1 === matchElement2){
+                        console.log("Same element clicked twice. Choose another.");
+                        matchElement2 = null;
+                        return;}
+                    matchValue2 = imgSrc;
+                    console.log("Second selection made.");
+                }
+                if (matchValue1 && matchValue2){
+                    if (matchValue1 === matchValue2){
+                        correctSnd.play();
+                        console.log(" ");
+                        console.log("It's a match!");
+                        matchElement1.onclick = null;
+                        matchElement2.onclick = null;
+                        matchesFound += 1;
+                        if (matchesFound === matchGoal){
+                            canReload = true;
+                            document.getElementById("the-footer").style.display ='flex';
+                            winSnd.play();
+                            console.log(" ");
+                            console.log("Congratulations! You've found all matches!");
+                        }
+                    } else {
+                        console.log("No match.");
+                        let imgEl1 = matchElement1.querySelector('img');
+                        let imgEl2 = matchElement2.querySelector('img');
+                        setTimeout(() => {
+                            toggleDisplay(imgEl1);
+                            toggleDisplay(imgEl2);
+                        }
+                        , 1000);
+                    }
+                    matchElement1 = null;
+                    matchValue1 = null;
+                    matchElement2 = null;
+                    matchValue2 = null;
+                }
+            }
+            toggleDisplay(imgElement);
+        }
+
+
+        let canReload = false;
+
+        const correctSnd = new Audio("aud/correct.mp3"); // buffers automatically when created
+        correctSnd.volume = 0.3;
+        //https://pixabay.com/sound-effects/the-correct-answer-33-183620/
+
+        const winSnd = new Audio("aud/win.mp3"); // buffers automatically when created
+        //https://pixabay.com/sound-effects/you-win-sequence-2-183949/
+
+        let matchElement1 = null;
+        let matchValue1 = null;
+        let matchElement2 = null;
+        let matchValue2 = null;
+
+        let matchesFound = 0;
+
+        const srcArray = [
+            "img/anna.png", // Wikipedia image uploaded by Theo's Little Bot
+            "img/elsa-anna.png", // Wikipedia image uploaded by MeDaydreamer
+            "img/elsa.jpg", // Wikipedia image uploaded by Chiyako92
+            "img/kristoff.png", // Wikipedia image uploaded by Theo's Little Bot
+            "img/olaf.png", // Wikipedia image uploaded by Theo's Little Bot
+            "img/sven.png", // Wikipedia image uploaded by Flowerpiep
+            "img/three.jpg", // Wikipedia image uploaded by BrookTheHumming
+            "img/two.jpg" // Wikipedia image uploaded by BrookTheHumming
+        ];
+        const matchGoal = srcArray.length; // Number of unique images to match
+        const srcArrayDouble = srcArray.concat(srcArray); // Duplicate the array for pairs
+        const srcArrayDoubleShuffled = srcArrayDouble.sort(() => Math.random() - 0.5); // Shuffle the array
+
+        // Assign images to elements
+        const elements = document.querySelectorAll('.getsImg');
+        elements.forEach((el, idx) => {
+            const newChildImg = el.appendChild(document.createElement("img"));
+            newChildImg.style.display = 'none';
+            newChildImg.src = srcArrayDoubleShuffled[idx];
+        });
+
+</script>
+</html>
